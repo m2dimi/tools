@@ -26,3 +26,10 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+# mac os
+.DS_Store
+
+# results
+*.tsv
+*.csv

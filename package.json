@@ -1,0 +1,15 @@
+{
+  "name": "m2dimi",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d3": "^3.5.3",
+    "fast-csv": "^0.5.4"
+  }
+}
