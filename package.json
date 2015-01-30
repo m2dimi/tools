@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "d3": "^3.5.3",
-    "fast-csv": "^0.5.4"
+    "fast-csv": "^0.5.4",
+    "sandcrawler": "0.0.1",
+    "artoo-js": "^0.3.0"
   }
 }
