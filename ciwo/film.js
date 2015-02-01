@@ -25,7 +25,7 @@ var stream = fs.createReadStream("list.csv"),
 // the film scraper
 var film = new sandcrawler
     .scraper('film')
-    .limit(2)
+    .limit(600)
 
   .timeout(30 * 1000)
 
@@ -92,7 +92,7 @@ var film = new sandcrawler
     if(!err){
       for(var i in res.data)
         res.data[i].url = req.url;
-      //console.log(res.data, req.url)
+      console.log(req.url, results.length, '/', urls.length)
       results = results.concat(res.data);
     } else {
       req.retry();
@@ -113,6 +113,13 @@ var csvStream = csv({delimiter: ',', headers: true})
       sandcrawler.run(film, function(err, remains) {
         //console.log(results);
         console.log('sandcrawler finished. Good job guy! saving results...');
+        if(remains.length)
+          csv
+          .writeToPath("list.remains.csv", remains, {
+            headers: true
+          }).on("finish", function(){
+            console.log("results saved, everything is ok");
+          });
 
         csv
           .writeToPath("list.crawled.csv", results, {
