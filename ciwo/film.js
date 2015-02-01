@@ -1,7 +1,8 @@
 var sandcrawler = require('sandcrawler'),
     logger      = require('sandcrawler-logger'),  
     artoo       = require('artoo-js'),
-    fs          = require('fs');
+    fs          = require('fs'),
+    csv         = require('fast-csv');
 
 /* 
   This simple piece of code allow you to get 
@@ -16,7 +17,10 @@ var throttle = function(options){
 }
 
 // details list
-var details = [];
+var stream = fs.createReadStream("list.csv"),
+    urls = [],
+    results = [];
+
 
 // the film scraper
 var film = new sandcrawler
@@ -37,11 +41,6 @@ var film = new sandcrawler
     color: 'blue'
   }))
 
-  .urls([
-    'http://www.imdb.com/title/tt1014759/',
-    'http://www.imdb.com/title/tt0363771/'
-  ])
-
   .use(throttle({
     wait: 5367
   }))
@@ -51,11 +50,8 @@ var film = new sandcrawler
       title: {
         sel:'h1 .itemprop[itemprop=name]'
       },
-      original_title: {
-        sel: 'h1 .title-extra[itemprop=name]',
-        method: function() {
-          return artoo.$(this).text().trim();
-        }
+      rating: {
+        sel: '[itemprop=ratingValue]'
       },
       stars:{
         sel:'[itemprop=actors] a',
@@ -91,14 +87,45 @@ var film = new sandcrawler
   })
 
   .result(function(err, req, res) {
-    console.log(arguments)
-    if(!err)
-        details = details.concat(res.data);
-      else
-        req.retry();
+    
+    
+    if(!err){
+      for(var i in res.data)
+        res.data[i].url = req.url;
+      //console.log(res.data, req.url)
+      results = results.concat(res.data);
+    } else {
+      req.retry();
+    }
   });
 
-sandcrawler.run(film, function(err, remains) {
-  console.log(details);
-  console.log('done. Good job guy!');
-});
+
+var csvStream = csv({delimiter: ',', headers: true})
+    .on("data", function(data){
+      urls.push(data);
+    })
+    .on("end", function(){
+      urls = urls.map(function(d) {
+        return d.url;
+      });
+      console.log("starting crawler on", urls.length, "urls");
+      film.url(urls);
+      sandcrawler.run(film, function(err, remains) {
+        //console.log(results);
+        console.log('sandcrawler finished. Good job guy! saving results...');
+
+        csv
+          .writeToPath("list.crawled.csv", results, {
+            headers: true
+          }).on("finish", function(){
+            console.log("results saved, everything is ok");
+          });
+      });
+    })
+// read csv
+//
+
+// 
+
+// finally, start
+stream.pipe(csvStream);
